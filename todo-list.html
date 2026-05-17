@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #f0f4f8;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+        .wrapper {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        .top-bar h1 {
+            color: #1a202c;
+            font-size: 1.6rem;
+        }
+        .date-badge {
+            background: #fff;
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: #4a5568;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .input-area {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+        .main-input {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            margin-bottom: 12px;
+            transition: border-color 0.2s;
+        }
+        .main-input:focus { border-color: #667eea; }
+        .add-btn {
+            margin-left: auto;
+            padding: 10px 24px;
+            background: #667eea;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .add-btn:hover { background: #5a67d8; transform: translateY(-1px); }
+        .task-list { list-style: none; }
+        .task-item {
+            background: #fff;
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            transition: all 0.3s ease;
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .task-item:hover { transform: translateX(4px); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .task-item.done { opacity: 0.6; }
+        .task-item.done .task-text { text-decoration: line-through; color: #a0aec0; }
+        .checkbox {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #cbd5e0;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+        .checkbox.checked {
+            background: #48bb78;
+            border-color: #48bb78;
+            color: #fff;
+            font-size: 0.8rem;
+        }
+        .task-content { flex: 1; }
+        .task-text {
+            color: #2d3748;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+        .task-meta {
+            display: flex;
+            gap: 10px;
+            font-size: 0.8rem;
+            color: #a0aec0;
+        }
+        .task-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .icon-btn {
+            width: 34px;
+            height: 34px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            background: #f7fafc;
+        }
+        .icon-btn:hover { transform: scale(1.1); }
+        .icon-btn.edit { color: #667eea; }
+        .icon-btn.edit:hover { background: #e0e7ff; }
+        .icon-btn.delete { color: #e53e3e; }
+        .icon-btn.delete:hover { background: #fed7d7; }
+        .edit-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 2px solid #667eea;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+        }
+        .empty {
+            text-align: center;
+            padding: 50px 20px;
+            color: #a0aec0;
+        }
+        .empty-icon { font-size: 3rem; margin-bottom: 15px; }
+        .back {
+            display: inline-block;
+            margin-top: 25px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        .back:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="top-bar">
+            <h1>To-Do List</h1>
+            <div class="date-badge" id="todayDate"></div>
+        </div>
+        <div class="input-area">
+            <input type="text" class="main-input" id="taskInput" placeholder="Write a new task...">
+            <button class="add-btn" onclick="addTask()">➕ Add</button>
+        </div>
+        <ul class="task-list" id="taskList"></ul>
+        <a href="index.html" class="back">← Back to Home</a>
+    </div>
+    <script>
+        let tasks = JSON.parse(localStorage.getItem('myTasks')) || [];
+        let editingId = null;
+        document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', {
+            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        });
+        function save() {
+            localStorage.setItem('myTasks', JSON.stringify(tasks));
+            render();
+        }
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const text = input.value.trim();
+            if (!text) return;
+            tasks.unshift({
+                id: Date.now(),
+                text,
+                done: false,
+                createdAt: new Date().toLocaleString('en-US')
+            });
+            input.value = '';
+            save();
+        }
+        function toggleDone(id) {
+            tasks = tasks.map(t => t.id === id ? { ...t, done: !t.done } : t);
+            save();
+        }
+        function deleteTask(id) {
+            tasks = tasks.filter(t => t.id !== id);
+            save();
+        }
+        function startEdit(id) {
+            editingId = id;
+            render();
+            const el = document.getElementById('edit-' + id);
+            if (el) { el.focus(); el.select(); }
+        }
+        function saveEdit(id) {
+            const val = document.getElementById('edit-' + id).value.trim();
+            if (!val) return;
+            tasks = tasks.map(t => t.id === id ? { ...t, text: val } : t);
+            editingId = null;
+            save();
+        }
+        function cancelEdit() {
+            editingId = null;
+            render();
+        }
+        function render() {
+            const list = document.getElementById('taskList');
+            if (tasks.length === 0) {
+                list.innerHTML = '<div class="empty"><div class="empty-icon">📝</div><p>No tasks here. Add one!</p></div>';
+            } else {
+                list.innerHTML = tasks.map(t => {
+                    if (editingId === t.id) {
+                        return `<li class="task-item">
+                            <input class="edit-input" id="edit-${t.id}" value="${t.text}">
+                            <button class="icon-btn edit" onclick="saveEdit(${t.id})">💾</button>
+                            <button class="icon-btn delete" onclick="cancelEdit()">❌</button>
+                        </li>`;
+                    }
+                    return `
+                        <li class="task-item ${t.done ? 'done' : ''}">
+                            <div class="checkbox ${t.done ? 'checked' : ''}" onclick="toggleDone(${t.id})">${t.done ? '✓' : ''}</div>
+                            <div class="task-content">
+                                <div class="task-text">${t.text}</div>
+                                <div class="task-meta"><span>🕐 ${t.createdAt}</span></div>
+                            </div>
+                            <div class="task-actions">
+                                <button class="icon-btn edit" onclick="startEdit(${t.id})">✏️</button>
+                                <button class="icon-btn delete" onclick="deleteTask(${t.id})">🗑</button>
+                            </div>
+                        </li>
+                    `;
+                }).join('');
+            }
+        }
+        document.getElementById('taskInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') addTask();
+        });
+        render();
+    </script>
+</body>
+</html>

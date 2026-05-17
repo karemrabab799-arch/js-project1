@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Projects</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #0f0f23;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 40px 20px;
+            overflow-x: hidden;
+        }
+        .wrapper {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            animation: floatUp linear infinite;
+        }
+        @keyframes floatUp {
+            from { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            to { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+        .content { position: relative; z-index: 1; }
+        .hero {
+            text-align: center;
+            margin-bottom: 50px;
+            padding-top: 20px;
+        }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(102, 126, 234, 0.15);
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            color: #667eea;
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .hero p {
+            color: #718096;
+            font-size: 1.1rem;
+            max-width: 550px;
+            margin: 0 auto;
+            line-height: 1.7;
+        }
+        .projects {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .project {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 24px;
+            padding: 32px 28px;
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        .project::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            transition: all 0.3s;
+        }
+        .project:nth-child(1)::after { background: linear-gradient(90deg, #667eea, #764ba2); }
+        .project:nth-child(2)::after { background: linear-gradient(90deg, #f093fb, #f5576c); }
+        .project:nth-child(3)::after { background: linear-gradient(90deg, #4facfe, #00f2fe); }
+        .project:nth-child(4)::after { background: linear-gradient(90deg, #43e97b, #38f9d7); }
+        .project:hover {
+            transform: translateY(-10px);
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(255,255,255,0.12);
+            box-shadow: 0 30px 60px -15px rgba(0,0,0,0.5);
+        }
+        .project:hover::after { height: 5px; }
+        .project-icon {
+            font-size: 2.8rem;
+            margin-bottom: 18px;
+            display: block;
+            transition: transform 0.3s;
+        }
+        .project:hover .project-icon { transform: scale(1.15) rotate(-5deg); }
+        .project h2 {
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+            color: #f7fafc;
+        }
+        .project-desc {
+            color: #718096;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .project-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .tag {
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            background: rgba(102, 126, 234, 0.1);
+            color: #a3bffa;
+        }
+        .project:nth-child(2) .tag { background: rgba(240, 147, 251, 0.1); color: #fbb6ce; }
+        .project:nth-child(3) .tag { background: rgba(79, 172, 254, 0.1); color: #a5f3fc; }
+        .project:nth-child(4) .tag { background: rgba(67, 233, 123, 0.1); color: #9ae6b4; }
+        .arrow {
+            position: absolute;
+            top: 28px;
+            left: 28px;
+            font-size: 1.3rem;
+            opacity: 0;
+            transform: translateX(-10px);
+            transition: all 0.3s;
+        }
+        .project:hover .arrow {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            color: #4a5568;
+            font-size: 0.9rem;
+            border-top: 1px solid rgba(255,255,255,0.05);
+            margin-top: 20px;
+        }
+        .footer span { color: #667eea; }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 1.9rem; }
+            .projects { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="particles" id="particles"></div>
+    <div class="content wrapper">
+        <div class="hero">
+            <div class="hero-badge">🚀 HTML · CSS · JavaScript</div>
+            <h1>Interactive JavaScript Projects</h1>
+            <p>4 practical projects to learn DOM, Events, and Arrays basics. Each project works independently.</p>
+        </div>
+        <div class="projects">
+            <a href="todo-list.html" class="project">
+                <span class="arrow">→</span>
+                <span class="project-icon">📋</span>
+                <h2>To-Do List</h2>
+                <p class="project-desc">Add your tasks, set priority and category, and track your progress.</p>
+                <div class="project-tags">
+                    <span class="tag">DOM</span>
+                    <span class="tag">Arrays</span>
+                    <span class="tag">LocalStorage</span>
+                </div>
+            </a>
+            <a href="color-palette.html" class="project">
+                <span class="arrow">→</span>
+                <span class="project-icon">🎨</span>
+                <h2>Color Palette</h2>
+                <p class="project-desc">Generate harmonious color palettes (Random, Complementary, Triadic) and save them.</p>
+                <div class="project-tags">
+                    <span class="tag">Random</span>
+                    <span class="tag">Clipboard</span>
+                    <span class="tag">Harmony</span>
+                </div>
+            </a>
+            <a href="table-generator.html" class="project">
+                <span class="arrow">→</span>
+                <span class="project-icon">📊</span>
+                <h2>Table Generator</h2>
+                <p class="project-desc">Create dynamic tables, sort data, and export as CSV easily.</p>
+                <div class="project-tags">
+                    <span class="tag">Tables</span>
+                    <span class="tag">Sorting</span>
+                    <span class="tag">Export</span>
+                </div>
+            </a>
+            <a href="modal-popup.html" class="project">
+                <span class="arrow">→</span>
+                <span class="project-icon">🪟</span>
+                <h2>Modal Popup</h2>
+                <p class="project-desc">4 types of Modals: Info, Confirm, Form, Success. With Toast notifications.</p>
+                <div class="project-tags">
+                    <span class="tag">Modal</span>
+                    <span class="tag">Animation</span>
+                    <span class="tag">Events</span>
+                </div>
+            </a>
+        </div>
+        <div class="footer">
+            Built with <span>❤️</span> using HTML · CSS · JavaScript
+        </div>
+    </div>
+    <script>
+        const container = document.getElementById('particles');
+        for (let i = 0; i < 30; i++) {
+            const p = document.createElement('div');
+            p.className = 'particle';
+            p.style.left = Math.random() * 100 + '%';
+            p.style.animationDuration = (8 + Math.random() * 12) + 's';
+            p.style.animationDelay = (Math.random() * 10) + 's';
+            p.style.width = p.style.height = (2 + Math.random() * 4) + 'px';
+            container.appendChild(p);
+        }
+    </script>
+</body>
+</html>

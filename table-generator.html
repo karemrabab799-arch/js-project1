@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Table Generator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: #f7fafc;
+            color: #2d3748;
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+        .wrapper {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 1.8rem;
+            margin-bottom: 6px;
+            color: #2d3748;
+        }
+        .subtitle { color: #718096; margin-bottom: 25px; font-size: 0.95rem; }
+
+        .toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .toolbar input, .toolbar select {
+            padding: 10px 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            outline: none;
+            background: #fff;
+        }
+        .toolbar input:focus, .toolbar select:focus { border-color: #667eea; }
+        .toolbar-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-add { background: #48bb78; color: #fff; }
+        .btn-add:hover { background: #38a169; }
+        .btn-clear { background: #fc8181; color: #fff; }
+        .btn-clear:hover { background: #f56565; }
+        .btn-export { background: #667eea; color: #fff; }
+        .btn-export:hover { background: #5a67d8; }
+        .btn-demo { background: #ed8936; color: #fff; }
+        .btn-demo:hover { background: #dd6b20; }
+
+        .table-wrap {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table thead {
+            background: #667eea;
+            color: #fff;
+        }
+        .data-table th {
+            padding: 14px 16px;
+            text-align: right;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.2s;
+        }
+        .data-table th:hover { background: #5a67d8; }
+        .data-table th .sort-icon {
+            font-size: 0.75rem;
+            margin-right: 4px;
+            opacity: 0.6;
+        }
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 0.9rem;
+        }
+        .data-table tbody tr:hover { background: #f7fafc; }
+        .data-table tbody tr:last-child td { border-bottom: none; }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-green { background: #c6f6d5; color: #276749; }
+        .badge-yellow { background: #fefcbf; color: #744210; }
+        .badge-red { background: #fed7d7; color: #c53030; }
+        .badge-blue { background: #bee3f8; color: #2b6cb0; }
+
+.row-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .row-btn {
+            width: 30px;
+            height: 30px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .row-btn:hover { transform: scale(1.1); }
+        .row-btn.up { background: #bee3f8; color: #2b6cb0; }
+        .row-btn.down { background: #e9d8fd; color: #553c9a; }
+        .row-btn.del { background: #fed7d7; color: #c53030; }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .summary-card {
+            background: #fff;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+            text-align: center;
+        }
+        .summary-card .num {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #667eea;
+        }
+        .summary-card .label {
+            font-size: 0.85rem;
+            color: #718096;
+            margin-top: 4px;
+        }
+
+        .back {
+            display: inline-block;
+            margin-top: 20px;
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .back:hover { text-decoration: underline; }
+
+        .empty-table {
+            text-align: center;
+            padding: 50px;
+            color: #a0aec0;
+        }
+        .empty-table .icon { font-size: 3rem; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <h1>📊 Dynamic Table Generator</h1>
+        <p class="subtitle">Add rows, sort, filter, and export data</p>
+
+        <div class="summary" id="summary"></div>
+
+        <div class="toolbar">
+            <input type="text" id="nameInput" placeholder="Name">
+            <input type="text" id="roleInput" placeholder="Role">
+            <select id="statusInput">
+                <option value="Active">🟢 Active</option>
+                <option value="Pending">🟡 Pending</option>
+                <option value="Inactive">🔴 Inactive</option>
+                <option value="New">🔵 New</option>
+            </select>
+            <input type="number" id="ageInput" placeholder="Age" style="width:80px;">
+            <button class="toolbar-btn btn-add" onclick="addRow()">➕ Add</button>
+            <button class="toolbar-btn btn-demo" onclick="loadDemo()">📋 Demo Data</button>
+            <button class="toolbar-btn btn-clear" onclick="clearAll()">🗑 Clear All</button>
+            <button class="toolbar-btn btn-export" onclick="exportCSV()">📥 Export CSV</button>
+        </div>
+
+        <div class="table-wrap">
+            <table class="data-table" id="dataTable">
+                <thead>
+                    <tr>
+                        <th onclick="sortBy('name')">Name <span class="sort-icon">↕️</span></th>
+                        <th onclick="sortBy('role')">Role <span class="sort-icon">↕️</span></th>
+                        <th onclick="sortBy('status')">Status <span class="sort-icon">↕️</span></th>
+                        <th onclick="sortBy('age')">Age <span class="sort-icon">↕️</span></th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+
+        <a href="index.html" class="back">← Back to Home</a>
+    </div>
+
+<script>
+        let data = JSON.parse(localStorage.getItem('tableData')) || [];
+        let sortCol = null;
+        let sortAsc = true;
+
+        const statusBadges = {
+            'Active': 'badge-green',
+            'Pending': 'badge-yellow',
+            'Inactive': 'badge-red',
+            'New': 'badge-blue'
+        };
+
+        function save() {
+            localStorage.setItem('tableData', JSON.stringify(data));
+            render();
+        }
+
+        function addRow() {
+            const name = document.getElementById('nameInput').value.trim();
+            const role = document.getElementById('roleInput').value.trim();
+            const status = document.getElementById('statusInput').value;
+            const age = parseInt(document.getElementById('ageInput').value) || 0;
+
+            if (!name || !role) { alert('Please enter name and role'); return; }
+
+            data.push({ name, role, status, age, id: Date.now() });
+            document.getElementById('nameInput').value = '';
+            document.getElementById('roleInput').value = '';
+            document.getElementById('ageInput').value = '';
+            save();
+        }
+
+        function deleteRow(id) {
+            data = data.filter(r => r.id !== id);
+            save();
+        }
+
+        function moveRow(id, dir) {
+            const idx = data.findIndex(r => r.id === id);
+            if (idx < 0) return;
+            const newIdx = idx + dir;
+            if (newIdx < 0 || newIdx >= data.length) return;
+            [data[idx], data[newIdx]] = [data[newIdx], data[idx]];
+            save();
+        }
+
+        function sortBy(col) {
+            if (sortCol === col) sortAsc = !sortAsc;
+            else { sortCol = col; sortAsc = true; }
+
+            data.sort((a, b) => {
+                let va = a[col], vb = b[col];
+                if (typeof va === 'string') va = va.toLowerCase();
+                if (typeof vb === 'string') vb = vb.toLowerCase();
+                if (va < vb) return sortAsc ? -1 : 1;
+                if (va > vb) return sortAsc ? 1 : -1;
+                return 0;
+            });
+            render();
+        }
+
+        function clearAll() {
+            if (confirm('Are you sure you want to clear all data?')) {
+                data = [];
+                save();
+            }
+        }
+
+        function loadDemo() {
+            data = [
+                { name: 'Ahmed Mohamed', role: 'Developer', status: 'Active', age: 28, id: 1 },
+                { name: 'Sara Ali', role: 'Designer', status: 'Active', age: 25, id: 2 },
+                { name: 'Khaled Hassan', role: 'Manager', status: 'Pending', age: 35, id: 3 },
+                { name: 'Nour El-Din', role: 'Analyst', status: 'New', age: 30, id: 4 },
+                { name: 'Laila Fouad', role: 'Tester', status: 'Inactive', age: 27, id: 5 },
+            ];
+            save();
+        }
+
+        function exportCSV() {
+            if (data.length === 0) { alert('No data to export'); return; }
+            let csv = 'Name,Role,Status,Age';
+            data.forEach(r => { csv += `${r.name},${r.role},${r.status},${r.age}
+`; });
+            const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'table_data.csv';
+            link.click();
+        }
+
+function render() {
+            const tbody = document.getElementById('tableBody');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-table"><div class="icon">📭</div><p>Table is empty. Add data or load demo data</p></td></tr>';
+            } else {
+                tbody.innerHTML = data.map((r, idx) => `
+                    <tr>
+                        <td><strong>${r.name}</strong></td>
+                        <td>${r.role}</td>
+                        <td><span class="badge ${statusBadges[r.status] || 'badge-green'}">${r.status}</span></td>
+                        <td>${r.age}</td>
+                        <td>
+                            <div class="row-actions">
+                                <button class="row-btn up" onclick="moveRow(${r.id}, -1)" title="Up">⬆️</button>
+                                <button class="row-btn down" onclick="moveRow(${r.id}, 1)" title="Down">⬇️</button>
+                                <button class="row-btn del" onclick="deleteRow(${r.id})" title="Delete">🗑</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            const active = data.filter(r => r.status === 'Active').length;
+            const pending = data.filter(r => r.status === 'Pending').length;
+            const avgAge = data.length ? Math.round(data.reduce((s, r) => s + r.age, 0) / data.length) : 0;
+
+            document.getElementById('summary').innerHTML = `
+                <div class="summary-card"><div class="num">${data.length}</div><div class="label">Total Rows</div></div>
+                <div class="summary-card"><div class="num">${active}</div><div class="label">Active</div></div>
+                <div class="summary-card"><div class="num">${pending}</div><div class="label">Pending</div></div>
+                <div class="summary-card"><div class="num">${avgAge}</div><div class="label">Avg Age</div></div>
+            `;
+        }
+
+        render();
+    </script>
+</body>
+</html>
+
